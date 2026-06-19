@@ -8,7 +8,8 @@
     "build": "tsc -p tsconfig.json && vite build",
     "preview": "vite preview --host 0.0.0.0",
     "lint": "eslint .",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "postinstall": "npx playwright install chromium"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^5.1.0",
