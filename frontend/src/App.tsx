@@ -1,9 +1,10 @@
-import { Building2, Globe2, Target, TrendingUp } from 'lucide-react';
+import { Building2, Globe2, Moon, Sun, Target, TrendingUp } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CompanyTable } from './components/CompanyTable';
 import { Filters, type FiltersState } from './components/Filters';
 import { SearchBar } from './components/SearchBar';
 import { StatCard } from './components/StatCard';
+import { useTheme } from './contexts/ThemeContext';
 import { getCompanies, getStats, searchCompanies, type Company, type DashboardStats } from './lib/api';
 
 const initialStats: DashboardStats = {
@@ -14,6 +15,7 @@ const initialStats: DashboardStats = {
 };
 
 export function App() {
+  const { theme, toggleTheme } = useTheme();
   const [stats, setStats] = useState(initialStats);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [filters, setFilters] = useState<FiltersState>({ siteMode: 'all', minScore: -50 });
@@ -56,15 +58,24 @@ export function App() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f7f9fb] text-ink">
+    <main className="min-h-screen bg-[#f7f9fb] text-ink dark:bg-slate-900 dark:text-slate-100">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
-        <header className="flex flex-col gap-2 border-b border-slate-200 pb-5 md:flex-row md:items-end md:justify-between">
+        <header className="flex flex-col gap-2 border-b border-slate-200 pb-5 md:flex-row md:items-end md:justify-between dark:border-slate-700">
           <div>
             <p className="text-sm font-semibold uppercase tracking-wide text-mint">RadarLeads</p>
-            <h1 className="mt-1 text-3xl font-semibold text-ink">Prospecção local para serviços web</h1>
+            <h1 className="mt-1 text-3xl font-semibold text-ink dark:text-slate-100">Prospecção local para serviços web</h1>
           </div>
-          <div className="rounded-md bg-white px-3 py-2 text-sm text-slate-600 shadow-sm ring-1 ring-slate-200">
-            Score alto indica oportunidade comercial maior.
+          <div className="flex items-center gap-3">
+            <button
+              onClick={toggleTheme}
+              className="rounded-md bg-white px-3 py-2 text-slate-600 shadow-sm ring-1 ring-slate-200 transition-all hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700 dark:hover:bg-slate-700"
+              aria-label="Alternar tema"
+            >
+              {theme === 'light' ? <Moon className="size-5" /> : <Sun className="size-5" />}
+            </button>
+            <div className="rounded-md bg-white px-3 py-2 text-sm text-slate-600 shadow-sm ring-1 ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700">
+              Score alto indica oportunidade comercial maior.
+            </div>
           </div>
         </header>
 
@@ -77,25 +88,25 @@ export function App() {
 
         <SearchBar loading={loading} onSearch={handleSearch} />
 
-        {message && <div className="rounded-md border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm">{message}</div>}
+        {message && <div className="rounded-md border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">{message}</div>}
 
         <Filters filters={filters} onChange={setFilters} />
 
         <section className="grid gap-6 xl:grid-cols-[1fr_320px]">
           <CompanyTable companies={companies} />
-          <aside className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Top oportunidades</h2>
+          <aside className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Top oportunidades</h2>
             <div className="mt-4 space-y-3">
               {stats.topOpportunities.map((company) => (
-                <div key={company.id} className="rounded-md border border-slate-100 p-3">
+                <div key={company.id} className="rounded-md border border-slate-100 p-3 dark:border-slate-700">
                   <div className="flex items-start justify-between gap-3">
-                    <p className="text-sm font-semibold text-ink">{company.name}</p>
+                    <p className="text-sm font-semibold text-ink dark:text-slate-100">{company.name}</p>
                     <span className="rounded bg-mint/10 px-2 py-1 text-xs font-semibold text-mint">{company.score}</span>
                   </div>
-                  <p className="mt-1 text-xs text-slate-500">{company.category ?? 'Categoria nao informada'}</p>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{company.category ?? 'Categoria nao informada'}</p>
                 </div>
               ))}
-              {stats.topOpportunities.length === 0 && <p className="text-sm text-slate-500">Busque empresas para iniciar o ranking.</p>}
+              {stats.topOpportunities.length === 0 && <p className="text-sm text-slate-500 dark:text-slate-400">Busque empresas para iniciar o ranking.</p>}
             </div>
           </aside>
         </section>

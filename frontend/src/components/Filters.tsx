@@ -12,14 +12,14 @@ interface FiltersProps {
 
 export function Filters({ filters, onChange }: FiltersProps) {
   return (
-    <div className="flex flex-col gap-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm lg:flex-row lg:items-center lg:justify-between">
-      <div className="flex items-center gap-2 text-sm font-semibold text-ink">
+    <div className="flex flex-col gap-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm lg:flex-row lg:items-center lg:justify-between dark:border-slate-700 dark:bg-slate-800">
+      <div className="flex items-center gap-2 text-sm font-semibold text-ink dark:text-slate-100">
         <SlidersHorizontal className="size-4 text-mint" />
         Filtros
       </div>
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-        <div className="grid grid-cols-3 rounded-md border border-slate-200 bg-slate-50 p-1 text-sm">
+        <div className="grid grid-cols-3 rounded-md border border-slate-200 bg-slate-50 p-1 text-sm dark:border-slate-600 dark:bg-slate-700">
           {[
             ['all', 'Todos'],
             ['noSite', 'Sem site'],
@@ -30,7 +30,9 @@ export function Filters({ filters, onChange }: FiltersProps) {
               type="button"
               onClick={() => onChange({ ...filters, siteMode: value as FiltersState['siteMode'] })}
               className={`h-9 rounded px-3 font-medium transition ${
-                filters.siteMode === value ? 'bg-white text-ink shadow-sm' : 'text-slate-500 hover:text-ink'
+                filters.siteMode === value
+                  ? 'bg-white text-ink shadow-sm dark:bg-slate-600 dark:text-slate-100'
+                  : 'text-slate-500 hover:text-ink dark:text-slate-400 dark:hover:text-slate-100'
               }`}
             >
               {label}
@@ -38,7 +40,7 @@ export function Filters({ filters, onChange }: FiltersProps) {
           ))}
         </div>
 
-        <label className="flex min-w-64 items-center gap-3 text-sm text-slate-600">
+        <label className="flex min-w-64 items-center gap-3 text-sm text-slate-600 dark:text-slate-300">
           Score mínimo
           <input
             type="range"
@@ -49,7 +51,7 @@ export function Filters({ filters, onChange }: FiltersProps) {
             onChange={(event) => onChange({ ...filters, minScore: Number(event.target.value) })}
             className="accent-mint"
           />
-          <span className="w-10 rounded bg-field px-2 py-1 text-center font-semibold text-ink">{filters.minScore}</span>
+          <span className="w-10 rounded bg-field px-2 py-1 text-center font-semibold text-ink dark:bg-slate-700 dark:text-slate-100">{filters.minScore}</span>
         </label>
       </div>
     </div>
