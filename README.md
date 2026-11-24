@@ -89,6 +89,8 @@ Body de busca:
 
 - Use a raiz do repositório como **Root Directory**, sem selecionar `frontend`.
 - O `vercel.json` configura o build e a pasta de saída `frontend/dist`.
+- A instalação usa `npm ci` na raiz. Remova comandos antigos como
+  `npm install --prefix=..` das configurações de instalação na Vercel.
 - A função `api/index.ts` atende `/_/backend/*`, preservando as rotas Express.
 - Configure as credenciais Firebase Admin nas variáveis de ambiente da Vercel.
 - O frontend usa `/_/backend` em produção por padrão. Se definir `VITE_API_URL`,
