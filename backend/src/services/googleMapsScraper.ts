@@ -89,9 +89,9 @@ async function collectResultLinks(page: Page, limit: number): Promise<string[]> 
 async function extractDetails(page: Page): Promise<ScrapedCompany> {
   const name = await textContent(page, 'h1');
   const category = await textContent(page, 'button[jsaction*="category"]');
-  const ratingText = await textContent(page, 'div[role="img"][aria-label*="estrelas"], span[aria-label*="estrelas"]');
-  const reviewsText = await textContent(page, 'button[aria-label*="avaliações"], button[aria-label*="reviews"]');
-  const website = await hrefContent(page, 'a[data-item-id="authority"], a[aria-label*="Website"], a[aria-label*="site"]');
+  const ratingText = await ariaOrText(page, 'div[role="img"][aria-label*="estrelas"], span[aria-label*="estrelas"]');
+  const reviewsText = await ariaOrText(page, 'button[aria-label*="avaliações"], button[aria-label*="reviews"], button:has-text("avaliações")');
+  const website = await extractWebsite(page);
   const address = await ariaOrText(page, 'button[data-item-id="address"], button[aria-label*="Endereço"], button[aria-label*="Address"]');
   const phone = await ariaOrText(page, 'button[data-item-id^="phone"], button[aria-label*="Telefone"], button[aria-label*="Phone"]');
 
@@ -115,15 +115,6 @@ async function textContent(page: Page, selector: string): Promise<string | null>
   return locator.textContent({ timeout: 3000 });
 }
 
-async function hrefContent(page: Page, selector: string): Promise<string | null> {
-  const locator = page.locator(selector).first();
-  if (!(await locator.isVisible().catch(() => false))) {
-    return null;
-  }
-
-  return locator.getAttribute('href', { timeout: 3000 });
-}
-
 async function ariaOrText(page: Page, selector: string): Promise<string | null> {
   const locator = page.locator(selector).first();
   if (!(await locator.isVisible().catch(() => false))) {
@@ -132,6 +123,26 @@ async function ariaOrText(page: Page, selector: string): Promise<string | null> 
 
   const aria = await locator.getAttribute('aria-label').catch(() => null);
   return aria ?? locator.textContent({ timeout: 3000 });
+}
+
+async function extractWebsite(page: Page): Promise<string | null> {
+  const candidates = await page
+    .locator('a[data-item-id="authority"], a[aria-label*="Website"], a[aria-label*="site"], a[aria-label*="Abrir website"]')
+    .evaluateAll((links) =>
+      links.map((link) => ({
+        href: (link as { href?: string }).href ?? '',
+        label: (link as { getAttribute?: (name: string) => string | null }).getAttribute?.('aria-label') ?? ''
+      }))
+    );
+
+  const valid = candidates.find(({ href, label }) => {
+    if (!/^https?:\/\//i.test(href)) return false;
+    if (href.includes('/aclk') || href.includes('google.com/aclk')) return false;
+    if (/^Anúncio/i.test(label.trim())) return false;
+    return true;
+  });
+
+  return valid ? stripGoogleRedirect(valid.href) : null;
 }
 
 function cleanLabel(value: string | null): string | null {
@@ -153,8 +164,12 @@ function parseRating(value: string | null): number | null {
 }
 
 function parseReviewCount(value: string | null): number | null {
-  const match = value?.match(/[\d.,]+/);
-  return match ? Number(match[0].replace(/\D/g, '')) : null;
+  if (!value) return null;
+  const match = value.match(/[\d.,]+/);
+  if (!match) return null;
+  const numeric = Number(match[0].replace(/\./g, '').replace(',', '.'));
+  if (!Number.isFinite(numeric)) return null;
+  return /mil/i.test(value) ? Math.round(numeric * 1000) : numeric;
 }
 
 function stripGoogleRedirect(value: string): string {
