@@ -1,5 +1,6 @@
-import { Download, ExternalLink, Globe2, Phone } from 'lucide-react';
+import { Download, ExternalLink, Globe2, MessageCircle, Phone } from 'lucide-react';
 import type { Company } from '../lib/api';
+import { createProspectingMessage, createWhatsAppUrl, normalizeWhatsAppPhone } from '../lib/whatsapp';
 
 interface CompanyTableProps {
   companies: Company[];
@@ -69,7 +70,7 @@ export function CompanyTable({ companies }: CompanyTableProps) {
         <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
           <thead className="bg-slate-50 dark:bg-slate-700">
             <tr>
-              {['Empresa', 'Categoria', 'Telefone', 'Site', 'Score'].map((header) => (
+              {['Empresa', 'Categoria', 'Telefone', 'Site', 'Score', 'WhatsApp'].map((header) => (
                 <th key={header} className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                   {header}
                 </th>
@@ -77,49 +78,71 @@ export function CompanyTable({ companies }: CompanyTableProps) {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-            {companies.map((company) => (
-              <tr key={company.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-700/50">
-                <td className="max-w-xs px-5 py-4">
-                  <p className="font-semibold text-ink dark:text-slate-100">{company.name}</p>
-                  <p className="mt-1 line-clamp-1 text-xs text-slate-500 dark:text-slate-400">{company.address ?? 'Endereco nao informado'}</p>
-                </td>
-                <td className="px-5 py-4 text-sm text-slate-600 dark:text-slate-300">{company.category ?? 'Nao informado'}</td>
-                <td className="px-5 py-4 text-sm text-slate-600 dark:text-slate-300">
-                  {company.phone ? (
-                    <span className="inline-flex items-center gap-2">
-                      <Phone className="size-4 text-mint" />
-                      {company.phone}
+            {companies.map((company) => {
+              const phone = normalizeWhatsAppPhone(company.phone);
+              return (
+                <tr key={company.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-700/50">
+                  <td className="max-w-xs px-5 py-4">
+                    <p className="font-semibold text-ink dark:text-slate-100">{company.name}</p>
+                    <p className="mt-1 line-clamp-1 text-xs text-slate-500 dark:text-slate-400">{company.address ?? 'Endereco nao informado'}</p>
+                  </td>
+                  <td className="px-5 py-4 text-sm text-slate-600 dark:text-slate-300">{company.category ?? 'Nao informado'}</td>
+                  <td className="px-5 py-4 text-sm text-slate-600 dark:text-slate-300">
+                    {company.phone ? (
+                      <span className="inline-flex items-center gap-2">
+                        <Phone className="size-4 text-mint" />
+                        {company.phone}
+                      </span>
+                    ) : (
+                      'Nao informado'
+                    )}
+                  </td>
+                  <td className="px-5 py-4 text-sm">
+                    {company.website ? (
+                      <a
+                        href={company.website}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-2 font-medium text-mint hover:text-ink dark:hover:text-slate-100"
+                      >
+                        <Globe2 className="size-4" />
+                        Abrir
+                        <ExternalLink className="size-3" />
+                      </a>
+                    ) : (
+                      <span className="rounded bg-coral/10 px-2 py-1 text-xs font-semibold text-coral">Sem site</span>
+                    )}
+                  </td>
+                  <td className="px-5 py-4">
+                    <span className="inline-flex min-w-14 justify-center rounded bg-ink px-3 py-1 text-sm font-semibold text-white dark:bg-slate-700 dark:text-slate-100">
+                      {company.score}
                     </span>
-                  ) : (
-                    'Nao informado'
-                  )}
-                </td>
-                <td className="px-5 py-4 text-sm">
-                  {company.website ? (
-                    <a
-                      href={company.website}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-2 font-medium text-mint hover:text-ink dark:hover:text-slate-100"
-                    >
-                      <Globe2 className="size-4" />
-                      Abrir
-                      <ExternalLink className="size-3" />
-                    </a>
-                  ) : (
-                    <span className="rounded bg-coral/10 px-2 py-1 text-xs font-semibold text-coral">Sem site</span>
-                  )}
-                </td>
-                <td className="px-5 py-4">
-                  <span className="inline-flex min-w-14 justify-center rounded bg-ink px-3 py-1 text-sm font-semibold text-white dark:bg-slate-700 dark:text-slate-100">
-                    {company.score}
-                  </span>
-                </td>
-              </tr>
-            ))}
+                  </td>
+                  <td className="px-5 py-4 text-sm">
+                    {phone ? (
+                      <a
+                        href={createWhatsAppUrl(phone, createProspectingMessage(company))}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`Enviar mensagem para ${company.name} no WhatsApp`}
+                        title="Abre o WhatsApp com uma mensagem personalizada. Revise e confirme o envio por lá."
+                        className="inline-flex items-center gap-2 whitespace-nowrap rounded-md bg-emerald-600 px-3 py-2 font-semibold text-white transition hover:bg-emerald-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600"
+                      >
+                        <MessageCircle className="size-4" />
+                        Enviar mensagem
+                      </a>
+                    ) : (
+                      <span className="text-xs text-slate-500 dark:text-slate-400">
+                        {company.phone ? 'Telefone inválido ou sem DDD' : 'Sem telefone'}
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
             {companies.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-5 py-10 text-center text-sm text-slate-500 dark:text-slate-400">
+                <td colSpan={6} className="px-5 py-10 text-center text-sm text-slate-500 dark:text-slate-400">
                   Nenhuma empresa encontrada com os filtros atuais.
                 </td>
               </tr>
