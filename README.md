@@ -85,6 +85,20 @@ Body de busca:
 - Possui telefone: +20
 - Possui site: -50
 
+## Deploy na Vercel
+
+- Use a raiz do repositório como **Root Directory**, sem selecionar `frontend`.
+- O `vercel.json` configura o build e a pasta de saída `frontend/dist`.
+- A função `api/index.ts` atende `/_/backend/*`, preservando as rotas Express.
+- Configure as credenciais Firebase Admin nas variáveis de ambiente da Vercel.
+- O frontend usa `/_/backend` em produção por padrão. Se definir `VITE_API_URL`,
+  use `/_/backend` ou a URL de um backend externo.
+- Após o deploy, `/_/backend/health` deve retornar JSON com `status: "ok"`.
+
+O scraping com Playwright também depende de um Chromium disponível no ambiente
+da função e do tempo de execução permitido. O healthcheck valida o roteamento;
+uma busca real deve ser validada separadamente no ambiente publicado.
+
 ## Docker
 
 ```bash
